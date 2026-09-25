@@ -1,6 +1,6 @@
 # ImmortalWrt-Oray-X1Pro
 
-这是为 **向日葵 X1 Pro** 构建轻量 ImmortalWrt 固件的仓库。已在 ImmortalWrt v25.12.2 上测试通过。
+这是为 **向日葵 X1 Pro** 构建轻量 ImmortalWrt 固件的仓库，适用于使用向日葵原厂分区的 U-Boot。
 
 ## 前言
 
@@ -9,11 +9,16 @@
 1. [小路由完美刷OpenWrt | 蒲公英X1 Pro刷机＋恢复原厂 - OpenRouter](https://www.bilibili.com/video/BV1Wr8k6gEf5)
 2. [全网首发：蒲公英 X1Pro 刷机OpenWrt系统教程，原厂固件竟然不支持手动升级 - 猫点饭](https://mao.fan/article/501)
 
-两者的区别在 Flash 分区布局：OpenRouter 版本沿用向日葵原厂布局（主 UBI 分区起点为 `0x800000`），可以通过该 U-Boot 重新刷回原厂系统；猫点饭版本则采用 Cudy TR3000 布局（主 UBI 分区起点为 `0x5c0000`），刷入后无法回退至原厂系统。此外，这两个版本的 Uboot 似乎不能互相升级（[参考地址](https://www.bilibili.com/video/BV1Wr8k6gEf5?comment_on=1&comment_root_id=313164441777&share_tag=s_i#reply313164441777)，我没有进行测试）。
+两者的区别在 Flash 分区布局：
 
-虽然 X1 Pro 的硬件与 Cudy TR3000 接近，但使用 OpenRouter 的 Uboot 的设备不能直接刷入 [OpenWrt Firmware Selector](https://firmware-selector.openwrt.org/) 或 [ImmortalWrt Firmware Selector](https://firmware-selector.immortalwrt.org/) 提供的 Cudy TR3000 固件。同时，目前官方还没有适配 向日葵 X1 Pro。
+- **OpenRouter 版本**：沿用向日葵原厂布局（主 UBI 分区起点为 `0x800000`），可以通过该 U-Boot 重新刷回原厂系统
+- **猫点饭版本**：采用 Cudy TR3000 布局（主 UBI 分区起点为 `0x5c0000`），刷入后无法回退至原厂系统。
 
-网上由民间大佬编译的版本或多或少与我的需求不符，存在太臃肿、编译内容不透明、安全性没办法保证的情况，最终决定自己动手丰衣足食。
+此外，这两个版本的 Uboot 似乎不能互相升级（[参考地址](https://www.bilibili.com/video/BV1Wr8k6gEf5?comment_on=1&comment_root_id=313164441777&share_tag=s_i#reply313164441777)，我没有进行测试）。
+
+目前，OpenWrt 官方仅适配了 Cudy TR3000，并未适配向日葵 X1 Pro（两者在硬件上几乎完全相同）。因此，使用 OpenRouter 版 U-Boot 的 X1 Pro 无法直接刷入 [OpenWrt Firmware Selector](https://firmware-selector.openwrt.org/) 或 [ImmortalWrt Firmware Selector](https://firmware-selector.immortalwrt.org/) 提供的 Cudy TR3000 固件。
+
+本项目正是为了解决这一矛盾：在保留 OpenRouter 版 U-Boot（可回退原厂）的前提下，自行编译适配向日葵原厂分区布局的固件，让向日葵 X1 Pro 能够正常使用 OpenWrt / ImmortalWrt。
 
 ## 说明
 
@@ -25,6 +30,7 @@
 
 - WebUI
 - PBR
+- WireGuard
 - USB 网络共享
 - luci-app-package-manager
 - luci-app-wifischedule
@@ -146,7 +152,7 @@ bin/targets/mediatek/filogic/*oray_x1pro*sysupgrade.bin
 
 ### 6. 归档构建产物
 
-编译完成后运行归档脚本；它会验证镜像元数据、保存配置快照与校验和，并生成可追溯的文件名：
+编译完成后运行归档脚本；它会验证镜像元数据、保存配置快照与校验和：
 
 ```sh
 cd "$SOURCE_DIR"
